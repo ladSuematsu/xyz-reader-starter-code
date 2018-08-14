@@ -21,6 +21,7 @@ allprojects {
 
     ext {
         androidSupportVersion = "25.4.0"
+        okhttp3Version = "3.10.0"
 
     }
 }
