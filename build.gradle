@@ -20,6 +20,10 @@ allprojects {
     }
 
     ext {
+        compileSdkVersion = 25
+        minSdkVersion = 19
+        targetSdkVersion = 25
+
         androidSupportVersion = "25.4.0"
         okhttp3Version = "3.10.0"
 
