@@ -194,8 +194,7 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
     }
 
     private void loadArticle() {
-        article = callback.requestArticle(itemIndex);
-        bindViews();
+        getLoaderManager().initLoader(0, null, this);
     }
 
     static float progress(float v, float min, float max) {
