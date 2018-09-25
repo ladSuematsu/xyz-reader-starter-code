@@ -1,12 +1,8 @@
 package com.example.xyzreader.ui;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -22,19 +18,13 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
-import android.text.Layout;
 import android.text.Spanned;
-import android.text.StaticLayout;
-import android.text.TextPaint;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
-import android.util.AttributeSet;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -229,9 +219,9 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
 
         TextView titleView =  mRootView.findViewById(R.id.article_title);
         TextView bylineView =  mRootView.findViewById(R.id.article_byline);
-//        TextView bodyView =  mRootView.findViewById(R.id.article_body);
         RecyclerView bodyBlocks = mRootView.findViewById(R.id.article_body_blocks);
         bodyBlocks.setLayoutManager(new LinearLayoutManager(getContext()));
+        bodyBlocks.addItemDecoration(new SimplePaddingDecoration(getResources().getDimensionPixelSize(R.dimen.detail_body_paragraph_spacing)));
         bodyBlocks.setAdapter(textListAdapter);
 
 //        bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
@@ -287,11 +277,11 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
                         }
                     });
         } else {
-            mRootView.setVisibility(View.GONE);
             titleView.setText("N/A");
             bylineView.setText("N/A" );
-
             titleToolbar.setTitle("N/A");
+
+            textListAdapter.setDatasource("");
         }
     }
 
@@ -334,10 +324,7 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
         bindViews();
     }
 
-    class TextListAdapter extends RecyclerView.Adapter<TextListAdapter.TextBlockViewHolderBase> {
-        private static final int VIEWHOLDER_TYPE_HEADER = 1;
-        private static final int VIEWHOLDER_TYPE_PARAGRAPH = 2;
-
+    class TextListAdapter extends RecyclerView.Adapter<TextListAdapter.TextBlockViewHolder> {
         private final LayoutInflater layoutInflater;
         private String[] textBlocks;
 
@@ -348,34 +335,22 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
 
         @NonNull
         @Override
-        public TextListAdapter.TextBlockViewHolderBase onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            TextListAdapter.TextBlockViewHolderBase viewholder;
+        public TextListAdapter.TextBlockViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
-            View view;
-            switch (viewType) {
-                case VIEWHOLDER_TYPE_HEADER:
-                    view = layoutInflater.inflate(R.layout.article_text_body_header, parent, false);
-                    viewholder = new TextBlockViewHolder(view);
-                    break;
+            View view = layoutInflater.inflate(R.layout.article_text_body_paragraph, parent, false);
 
-                case VIEWHOLDER_TYPE_PARAGRAPH:
-                default:
-                    view = layoutInflater.inflate(R.layout.article_text_body_paragraph, parent, false);
-                    viewholder = new TextBlockViewHolder(view);
-                    break;
-            }
 
-            return viewholder;
+            return new TextBlockViewHolder(view);
         }
 
         @Override
-        public void onBindViewHolder(@NonNull TextListAdapter.TextBlockViewHolderBase holder, int position) {
+        public void onBindViewHolder(@NonNull TextListAdapter.TextBlockViewHolder holder, int position) {
             holder.setText(textBlocks[position]);
         }
 
         @Override
         public int getItemCount() {
-            return textBlocks.length + 1;
+            return textBlocks.length;
         }
 
         void setDatasource(String text) {
@@ -411,78 +386,6 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
                     textBlock.setText(Html.fromHtml(text));
                 }
             }
-        }
-    }
-
-    public static class TextBlockView extends View {
-        public final Point screenSize = new Point();
-
-        private StaticLayout textBlockLayout;
-        private TextPaint textBlockPaint;
-        private final int verticalPadding = (int) dpToPx(8);
-        private final int horizontalPadding = (int) dpToPx(8);
-
-        public TextBlockView(Context context) {
-            super(context);
-            init();
-        }
-
-        public TextBlockView(Context context, @Nullable AttributeSet attrs) {
-            super(context, attrs);
-            init();
-        }
-
-        public TextBlockView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-            super(context, attrs, defStyleAttr);
-            init();
-        }
-
-        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-        public TextBlockView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-            super(context, attrs, defStyleAttr, defStyleRes);
-            init();
-        }
-
-        @Override
-        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-            int textHeight = textBlockLayout.getHeight();
-            int textWidth = textBlockLayout.getWidth();
-
-            int viewHeight = 2 * verticalPadding + textHeight;
-            int viewWidth= 2 * horizontalPadding + textWidth;
-
-            setMeasuredDimension(viewWidth, viewHeight);
-        }
-
-        @Override
-        protected void onDraw(Canvas canvas) {
-            canvas.save();
-            textBlockLayout.draw(canvas);
-            canvas.restore();
-        }
-
-        private void init() {
-            textBlockPaint = new TextPaint(Paint.ANTI_ALIAS_FLAG);
-            textBlockPaint.setColor(getContext().getResources().getColor(R.color.ltgray));
-            textBlockPaint.setTextSize(spToPx(18));
-
-            WindowManager windowManager = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
-            windowManager.getDefaultDisplay().getSize(screenSize);
-        }
-
-        public void setTextBlock(CharSequence textBlock) {
-            textBlockLayout = new StaticLayout(textBlock, textBlockPaint, screenSize.x, Layout.Alignment.ALIGN_NORMAL, 1, 1, true);
-
-            requestLayout();
-            invalidate();
-        }
-
-        private float spToPx(int i) {
-            return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, i, getResources().getDisplayMetrics());
-        }
-
-        private float dpToPx(int i) {
-            return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, i, getResources().getDisplayMetrics());
         }
     }
 }
