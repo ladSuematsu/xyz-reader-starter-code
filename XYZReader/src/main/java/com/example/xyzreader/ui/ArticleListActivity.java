@@ -12,8 +12,8 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.support.v7.widget.Toolbar;
 import android.text.Html;
+import android.text.Spanned;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.View;
@@ -41,15 +41,8 @@ public class ArticleListActivity extends AppCompatActivity implements
         LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final String TAG = ArticleListActivity.class.toString();
-    private Toolbar mToolbar;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private RecyclerView mRecyclerView;
-
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
-    // Use default locale format
-    private SimpleDateFormat outputFormat = new SimpleDateFormat();
-    // Most time functions can only handle 1902 - 2037
-    private GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2,1,1);
 
     private final SwipeRefreshLayout.OnRefreshListener onRefreshListener = new SwipeRefreshLayout.OnRefreshListener() {
         @Override
@@ -73,7 +66,6 @@ public class ArticleListActivity extends AppCompatActivity implements
     }
 
     private void setupViews() {
-        mToolbar = findViewById(R.id.toolbar);
         mRecyclerView = findViewById(R.id.recycler_view);
 
         mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
@@ -135,10 +127,18 @@ public class ArticleListActivity extends AppCompatActivity implements
         mRecyclerView.setAdapter(null);
     }
 
-    private class Adapter extends RecyclerView.Adapter<ViewHolder> {
-        private Cursor mCursor;
+    private class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
+        private final ImageLoader loader;
+        private final Cursor mCursor;
+
+        private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
+        // Use default locale format
+        private final SimpleDateFormat outputFormat = new SimpleDateFormat();
+        // Most time functions can only handle 1902 - 2037
+        private final GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2,1,1);
 
         public Adapter(Cursor cursor) {
+            loader = ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader();
             mCursor = cursor;
         }
 
@@ -162,9 +162,31 @@ public class ArticleListActivity extends AppCompatActivity implements
             return vh;
         }
 
-        private Date parsePublishedDate() {
+        @Override
+        public void onBindViewHolder(final ViewHolder holder, int position) {
+            mCursor.moveToPosition(position);
+
+            String title = mCursor.getString(ArticleLoader.Query.TITLE);
+            holder.titleView.setText(title);
+
+            String date = mCursor.getString(ArticleLoader.Query.PUBLISHED_DATE);
+            String author = mCursor.getString(ArticleLoader.Query.AUTHOR);
+            Spanned parsedLabel = parseLabel(date, author);
+            holder.subtitleView.setText(parsedLabel);
+
+            String thumbnailUrl = mCursor.getString(ArticleLoader.Query.THUMB_URL);
+            holder.thumbnailView.setImageUrl(
+                    thumbnailUrl,
+                    loader);
+        }
+
+        @Override
+        public int getItemCount() {
+            return mCursor.getCount();
+        }
+
+        private Date parsePublishedDate(String date) {
             try {
-                String date = mCursor.getString(ArticleLoader.Query.PUBLISHED_DATE);
                 return dateFormat.parse(date);
             } catch (ParseException ex) {
                 Log.e(TAG, ex.getMessage());
@@ -173,49 +195,34 @@ public class ArticleListActivity extends AppCompatActivity implements
             }
         }
 
-        @Override
-        public void onBindViewHolder(final ViewHolder holder, int position) {
-            mCursor.moveToPosition(position);
-            holder.titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
-            Date publishedDate = parsePublishedDate();
-            if (!publishedDate.before(START_OF_EPOCH.getTime())) {
+        private Spanned parseLabel(String date, String author) {
+            Date publishedDate = parsePublishedDate(date);
 
-                holder.subtitleView.setText(Html.fromHtml(
-                        DateUtils.getRelativeTimeSpanString(
-                                publishedDate.getTime(),
-                                System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
-                                DateUtils.FORMAT_ABBREV_ALL).toString()
-                                + "<br/>" + " by "
-                                + mCursor.getString(ArticleLoader.Query.AUTHOR)));
-            } else {
-                holder.subtitleView.setText(Html.fromHtml(
-                        outputFormat.format(publishedDate)
-                        + "<br/>" + " by "
-                        + mCursor.getString(ArticleLoader.Query.AUTHOR)));
+            return !publishedDate.before(START_OF_EPOCH.getTime())
+                                        ? Html.fromHtml(
+                                        DateUtils.getRelativeTimeSpanString(
+                                                publishedDate.getTime(),
+                                                System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
+                                                DateUtils.FORMAT_ABBREV_ALL).toString()
+                                                + "<br/>" + " by "
+                                                + author)
+                                        : Html.fromHtml(
+                                        outputFormat.format(publishedDate)
+                                                + "<br/>" + " by "
+                                                + author);
+        }
+
+        class ViewHolder extends RecyclerView.ViewHolder {
+            DynamicHeightNetworkImageView thumbnailView;
+            TextView titleView;
+            TextView subtitleView;
+
+            ViewHolder(View view) {
+                super(view);
+                thumbnailView = view.findViewById(R.id.thumbnail);
+                titleView = view.findViewById(R.id.article_title);
+                subtitleView = view.findViewById(R.id.article_subtitle);
             }
-
-            ImageLoader loader = ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader();
-            holder.thumbnailView.setImageUrl(
-                    mCursor.getString(ArticleLoader.Query.THUMB_URL),
-                    ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader());
-        }
-
-        @Override
-        public int getItemCount() {
-            return mCursor.getCount();
-        }
-    }
-
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        public DynamicHeightNetworkImageView thumbnailView;
-        public TextView titleView;
-        public TextView subtitleView;
-
-        public ViewHolder(View view) {
-            super(view);
-            thumbnailView = view.findViewById(R.id.thumbnail);
-            titleView = view.findViewById(R.id.article_title);
-            subtitleView = view.findViewById(R.id.article_subtitle);
         }
     }
 }
