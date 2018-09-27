@@ -18,7 +18,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
-import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -48,28 +47,21 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
     private FragmentManager fragmentManager;
     private boolean viewCreated;
     private Toolbar titleToolbar;
-
-    public interface Callback {
-        Article requestArticle(int itemIndex);
-    }
+    private String labelFormat;
 
     private static final String TAG = "ArticleDetailFragment";
     private static final String ARG_ITEM_INDEX = "arg_item_index";
 
     public static final String ARG_ITEM_ID = "item_id";
-    private static final float PARALLAX_FACTOR = 1.25f;
 
     private Cursor mCursor;
-    @Deprecated private long mItemId;
+    private long mItemId;
     private View mRootView;
     private int mMutedColor = 0xFF333333;
     private NestedScrollView mScrollView;
     private ColorDrawable mStatusBarColorDrawable;
 
-    private View mPhotoContainerView;
     private ImageView mPhotoView;
-    private boolean mIsCard = false;
-    private int mStatusBarFullOpacityBottom;
 
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
     // Use default locale format
@@ -79,8 +71,6 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
     private ImageView mPhotoBackgroundView;
     private int cursorIndex;
 
-    private int itemIndex;
-    private Callback callback;
     TextListAdapter textListAdapter;
 
     /**
@@ -98,21 +88,11 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
         return fragment;
     }
 
-    public static ArticleDetailFragment newInstance2(int itemIndex) {
-        Bundle arguments = new Bundle();
-        arguments.putInt(ARG_ITEM_INDEX, itemIndex);
-        ArticleDetailFragment fragment = new ArticleDetailFragment();
-        fragment.setArguments(arguments);
-        return fragment;
-    }
-
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
 
-        callback  = (Callback) (getParentFragment() == null
-                    ?  context
-                    : getParentFragment());
+        labelFormat = getText(R.string.article_date_author_format_html).toString();
     }
 
     @Override
@@ -123,31 +103,7 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
             mItemId = getArguments().getLong(ARG_ITEM_ID);
         }
 
-        if (getArguments().containsKey(ARG_ITEM_INDEX)) {
-            itemIndex = getArguments().getInt(ARG_ITEM_INDEX);
-        }
-
-        mIsCard = getResources().getBoolean(R.bool.detail_is_card);
-        mStatusBarFullOpacityBottom = getResources().getDimensionPixelSize(
-                R.dimen.detail_card_top_margin);
-        setHasOptionsMenu(true);
-
         fragmentManager = getFragmentManager();
-    }
-
-    public ArticleDetailActivity getActivityCast() {
-        return (ArticleDetailActivity) getActivity();
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        // In support library r8, calling initLoader for a fragment in a FragmentPagerAdapter in
-        // the fragment's onCreate may cause the same LoaderManager to be dealt to multiple
-        // fragments because their mIndex is -1 (haven't been added to the activity yet). Thus,
-        // we do this in onActivityCreated.
-//        getLoaderManager().initLoader(0, null, this);
     }
 
     @Override
@@ -156,7 +112,6 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
         mPhotoView =  mRootView.findViewById(R.id.photo);
         mPhotoBackgroundView =  mRootView.findViewById(R.id.photo_background);
-        mPhotoContainerView = mRootView.findViewById(R.id.photo_container);
         titleToolbar = mRootView.findViewById(R.id.article_toolbar_title);
 
         mStatusBarColorDrawable = new ColorDrawable(0);
@@ -178,27 +133,13 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
 
-        if (isVisibleToUser && callback != null && !isResumed()) {
+        if (isVisibleToUser && isResumed() && (mCursor == null || mCursor.isClosed())) {
             loadArticle();
         }
     }
 
     private void loadArticle() {
         getLoaderManager().initLoader(0, null, this);
-    }
-
-    static float progress(float v, float min, float max) {
-        return constrain((v - min) / (max - min), 0, 1);
-    }
-
-    static float constrain(float val, float min, float max) {
-        if (val < min) {
-            return min;
-        } else if (val > max) {
-            return max;
-        } else {
-            return val;
-        }
     }
 
     private Date parsePublishedDate() {
@@ -224,34 +165,32 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
         bodyBlocks.addItemDecoration(new SimplePaddingDecoration(getResources().getDimensionPixelSize(R.dimen.detail_body_paragraph_spacing)));
         bodyBlocks.setAdapter(textListAdapter);
 
-//        bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
+        if (article == null) {
+            titleView.setText("N/A");
+            bylineView.setText("N/A" );
+            titleToolbar.setTitle("N/A");
 
-        if (article != null) {
+            textListAdapter.setDatasource("");
+        } else {
             mRootView.setAlpha(0);
             mRootView.setVisibility(View.VISIBLE);
             mRootView.animate().alpha(1);
             titleToolbar.setTitle(article.getTitle());
             titleView.setText(article.getTitle());
+
             Date publishedDate = parsePublishedDate();
-            if (!publishedDate.before(START_OF_EPOCH.getTime())) {
-                Spanned subtitle = Html.fromHtml(
-                        DateUtils.getRelativeTimeSpanString(
-                                publishedDate.getTime(),
-                                System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
-                                DateUtils.FORMAT_ABBREV_ALL).toString()
-                                + " by <font color='#ffffff'>"
-                                + article.getAuthor()
-                                + "</font>");
+            String author = article.getAuthor();
+            String formattedDate = publishedDate.before(START_OF_EPOCH.getTime())
+                                                            ? outputFormat.format(publishedDate)
+                                                            : DateUtils.getRelativeTimeSpanString(publishedDate.getTime(),
+                                                                    System.currentTimeMillis(),
+                                                                    DateUtils.HOUR_IN_MILLIS,
+                                                                    DateUtils.FORMAT_ABBREV_ALL).toString();
 
-
-                bylineView.setText(subtitle);
-            } else {
-                String subtitle = outputFormat.format(publishedDate) + " by "
-                        + article.getAuthor();
-
-                // If date is before 1902, just show the string
-                bylineView.setText(subtitle);
-            }
+            String subtitle = String.format(labelFormat, formattedDate, author);
+            bylineView.setText(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                                        ? Html.fromHtml(subtitle, Html.FROM_HTML_MODE_LEGACY)
+                                        : Html.fromHtml(subtitle));
 
             loadTextBody(article.getBody());
             
@@ -276,12 +215,6 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
 
                         }
                     });
-        } else {
-            titleView.setText("N/A");
-            bylineView.setText("N/A" );
-            titleToolbar.setTitle("N/A");
-
-            textListAdapter.setDatasource("");
         }
     }
 

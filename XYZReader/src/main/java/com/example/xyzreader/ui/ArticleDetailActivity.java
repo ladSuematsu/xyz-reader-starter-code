@@ -18,13 +18,12 @@ import android.view.View;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.ItemsContract;
-import com.example.xyzreader.ui.entity.Article;
 
 /**
  * An activity representing a single Article detail screen, letting you swipe between articles.
  */
 public class ArticleDetailActivity extends AppCompatActivity
-        implements LoaderManager.LoaderCallbacks<Cursor>, ArticleDetailFragment.Callback {
+        implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private Cursor mCursor;
     private long mStartId;
@@ -45,7 +44,7 @@ public class ArticleDetailActivity extends AppCompatActivity
         setContentView(R.layout.activity_article_detail);
 
         mPagerAdapter = new MyPagerAdapter(getSupportFragmentManager());
-        mPager = (ViewPager) findViewById(R.id.pager);
+        mPager = findViewById(R.id.pager);
         mPager.setAdapter(mPagerAdapter);
         Toolbar toolbar = findViewById(R.id.up_container);
 
@@ -108,7 +107,6 @@ public class ArticleDetailActivity extends AppCompatActivity
         // Select the start ID
         if (mStartId > 0) {
             mCursor.moveToFirst();
-            // TODO: optimize
 
             while (!mCursor.isAfterLast()) {
                 if (mCursor.getLong(ArticleLoader.Query._ID) == mStartId) {
@@ -131,11 +129,6 @@ public class ArticleDetailActivity extends AppCompatActivity
         mCursor.close();
         mCursor = null;
         mPagerAdapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public Article requestArticle(int itemIndex) {
-        return Article.extract(itemIndex, mCursor);
     }
 
     private class MyPagerAdapter extends FragmentStatePagerAdapter {
