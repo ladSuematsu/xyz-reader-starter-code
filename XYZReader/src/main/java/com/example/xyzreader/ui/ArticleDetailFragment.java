@@ -48,6 +48,7 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
     private FragmentManager fragmentManager;
     private boolean viewCreated;
     private Toolbar titleToolbar;
+    private String labelFormat;
 
     public interface Callback {
         Article requestArticle(int itemIndex);
@@ -113,6 +114,8 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
         callback  = (Callback) (getParentFragment() == null
                     ?  context
                     : getParentFragment());
+
+        labelFormat = getText(R.string.article_date_author_format_html).toString();
     }
 
     @Override
@@ -224,32 +227,32 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
         bodyBlocks.addItemDecoration(new SimplePaddingDecoration(getResources().getDimensionPixelSize(R.dimen.detail_body_paragraph_spacing)));
         bodyBlocks.setAdapter(textListAdapter);
 
-        if (article != null) {
+        if (article == null) {
+            titleView.setText("N/A");
+            bylineView.setText("N/A" );
+            titleToolbar.setTitle("N/A");
+
+            textListAdapter.setDatasource("");
+        } else {
             mRootView.setAlpha(0);
             mRootView.setVisibility(View.VISIBLE);
             mRootView.animate().alpha(1);
             titleToolbar.setTitle(article.getTitle());
             titleView.setText(article.getTitle());
+
             Date publishedDate = parsePublishedDate();
-            if (!publishedDate.before(START_OF_EPOCH.getTime())) {
-                Spanned subtitle = Html.fromHtml(
-                        DateUtils.getRelativeTimeSpanString(
-                                publishedDate.getTime(),
-                                System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
-                                DateUtils.FORMAT_ABBREV_ALL).toString()
-                                + " by <font color='#ffffff'>"
-                                + article.getAuthor()
-                                + "</font>");
+            String author = article.getAuthor();
+            String formattedDate = publishedDate.before(START_OF_EPOCH.getTime())
+                                                            ? outputFormat.format(publishedDate)
+                                                            : DateUtils.getRelativeTimeSpanString(publishedDate.getTime(),
+                                                                    System.currentTimeMillis(),
+                                                                    DateUtils.HOUR_IN_MILLIS,
+                                                                    DateUtils.FORMAT_ABBREV_ALL).toString();
 
-
-                bylineView.setText(subtitle);
-            } else {
-                String subtitle = outputFormat.format(publishedDate) + " by "
-                        + article.getAuthor();
-
-                // If date is before 1902, just show the string
-                bylineView.setText(subtitle);
-            }
+            String subtitle = String.format(labelFormat, formattedDate, author);
+            bylineView.setText(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                                        ? Html.fromHtml(subtitle, Html.FROM_HTML_MODE_LEGACY)
+                                        : Html.fromHtml(subtitle));
 
             loadTextBody(article.getBody());
             
@@ -274,12 +277,6 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
 
                         }
                     });
-        } else {
-            titleView.setText("N/A");
-            bylineView.setText("N/A" );
-            titleToolbar.setTitle("N/A");
-
-            textListAdapter.setDatasource("");
         }
     }
 

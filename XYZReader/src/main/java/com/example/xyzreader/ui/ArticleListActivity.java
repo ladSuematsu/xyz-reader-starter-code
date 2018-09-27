@@ -12,8 +12,6 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.text.Html;
-import android.text.Spanned;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.View;
@@ -131,6 +129,8 @@ public class ArticleListActivity extends AppCompatActivity implements
         private final ImageLoader loader;
         private final Cursor mCursor;
 
+        private final String labelFormat = getString(R.string.article_date_author_format);
+
         private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.sss");
         // Use default locale format
         private final SimpleDateFormat outputFormat = new SimpleDateFormat();
@@ -171,7 +171,7 @@ public class ArticleListActivity extends AppCompatActivity implements
 
             String date = mCursor.getString(ArticleLoader.Query.PUBLISHED_DATE);
             String author = mCursor.getString(ArticleLoader.Query.AUTHOR);
-            Spanned parsedLabel = parseLabel(date, author);
+            String parsedLabel = parseLabel(date, author);
             holder.subtitleView.setText(parsedLabel);
 
             String thumbnailUrl = mCursor.getString(ArticleLoader.Query.THUMB_URL);
@@ -195,21 +195,17 @@ public class ArticleListActivity extends AppCompatActivity implements
             }
         }
 
-        private Spanned parseLabel(String date, String author) {
+        private String parseLabel(String date, String author) {
             Date publishedDate = parsePublishedDate(date);
 
-            return !publishedDate.before(START_OF_EPOCH.getTime())
-                                        ? Html.fromHtml(
-                                        DateUtils.getRelativeTimeSpanString(
-                                                publishedDate.getTime(),
-                                                System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
-                                                DateUtils.FORMAT_ABBREV_ALL).toString()
-                                                + "<br/>" + " by "
-                                                + author)
-                                        : Html.fromHtml(
-                                        outputFormat.format(publishedDate)
-                                                + "<br/>" + " by "
-                                                + author);
+            String formattedDate = publishedDate.before(START_OF_EPOCH.getTime())
+                    ? outputFormat.format(publishedDate)
+                    : DateUtils.getRelativeTimeSpanString(publishedDate.getTime(),
+                                                        System.currentTimeMillis(),
+                                                        DateUtils.HOUR_IN_MILLIS,
+                                                        DateUtils.FORMAT_ABBREV_ALL).toString();
+
+            return String.format(labelFormat, formattedDate, author);
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
