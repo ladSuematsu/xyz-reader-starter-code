@@ -224,8 +224,6 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
         bodyBlocks.addItemDecoration(new SimplePaddingDecoration(getResources().getDimensionPixelSize(R.dimen.detail_body_paragraph_spacing)));
         bodyBlocks.setAdapter(textListAdapter);
 
-//        bodyView.setTypeface(Typeface.createFromAsset(getResources().getAssets(), "Rosario-Regular.ttf"));
-
         if (article != null) {
             mRootView.setAlpha(0);
             mRootView.setVisibility(View.VISIBLE);
