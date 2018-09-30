@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent"
+    android:background="@color/photo_placeholder"
+    tools:showIn="@layout/fragment_article_detail">
+
+    <ImageView
+        android:id="@+id/photo_background"
+        android:scaleType="centerCrop"
+        android:layout_width="match_parent"
+        android:layout_height="224dp" />
+
+    <LinearLayout android:id="@+id/meta_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/header_title_container_background"
+        android:orientation="horizontal"
+        android:paddingLeft="@dimen/detail_inner_horiz_margin"
+        android:paddingRight="@dimen/detail_inner_horiz_margin"
+        android:paddingTop="@dimen/detail_metabar_vert_padding"
+        android:paddingBottom="@dimen/detail_metabar_vert_padding"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/article_title"
+                style="?android:attr/textAppearanceLarge"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="@dimen/detail_metabar_title_bottom_padding"
+                android:fontFamily="sans-serif-condensed"
+                android:textColor="#fff"
+                android:textStyle="bold"
+                android:textSize="@dimen/detail_title_text_size"
+                android:lineSpacingMultiplier="0.9" />
+
+            <TextView
+                android:id="@+id/article_byline"
+                style="?android:attr/textAppearanceSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#8fff" />
+        </LinearLayout>
+
+
+        <ImageView
+            android:gravity="center"
+            android:id="@+id/photo"
+            android:scaleType="centerInside"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center_vertical" />
+    </LinearLayout>
+
+</LinearLayout>
