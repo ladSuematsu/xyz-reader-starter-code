@@ -28,7 +28,6 @@
         android:layout_width="56dp"
         android:layout_height="56dp"
         android:src="@drawable/ic_share"
-        app:elevation="@dimen/fab_elevation"
         android:contentDescription="@string/action_share" />
 
 </android.support.design.widget.CoordinatorLayout>
