@@ -37,11 +37,6 @@
                         android:layout_height="224dp"
                         />
 
-                    <!--<View-->
-                    <!--android:layout_width="match_parent"-->
-                    <!--android:layout_height="112dp"-->
-                    <!--android:background="@drawable/photo_background_protection" />-->
-
                     <LinearLayout android:id="@+id/meta_bar"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -107,22 +102,10 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <FrameLayout app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/article_body_blocks"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        <!--<LinearLayout-->
-        <!--android:layout_gravity="center_horizontal"-->
-        <!--android:maxWidth="@dimen/detail_card_max_width"-->
-        <!--android:background="#fff"-->
-        <!--android:layout_marginTop="0dp"-->
-        <!--android:orientation="vertical"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="match_parent">-->
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/article_body_blocks"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-        <!--</LinearLayout>-->
-    </FrameLayout>
+        android:layout_height="wrap_content" />
 
 </android.support.design.widget.CoordinatorLayout>
