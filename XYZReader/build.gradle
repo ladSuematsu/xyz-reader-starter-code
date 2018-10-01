@@ -22,4 +22,6 @@ dependencies {
     implementation "com.android.support:design:$androidSupportVersion"
     implementation "com.squareup.okhttp3:okhttp:$okhttp3Version"
     implementation files('libs/volley.jar')
+    implementation "com.github.bumptech.glide:glide:$glideVersion"
+    annotationProcessor "com.github.bumptech.glide:compiler:$glideVersion"
 }

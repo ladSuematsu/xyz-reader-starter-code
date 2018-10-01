@@ -12,7 +12,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
-import android.support.v4.widget.NestedScrollView;
 import android.support.v7.graphics.Palette;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -29,6 +28,9 @@ import android.widget.TextView;
 
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.ui.entity.Article;
@@ -50,16 +52,12 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
     private String labelFormat;
 
     private static final String TAG = "ArticleDetailFragment";
-    private static final String ARG_ITEM_INDEX = "arg_item_index";
 
     public static final String ARG_ITEM_ID = "item_id";
 
     private Cursor mCursor;
     private long mItemId;
     private View mRootView;
-    private int mMutedColor = 0xFF333333;
-    private NestedScrollView mScrollView;
-    private ColorDrawable mStatusBarColorDrawable;
 
     private ImageView mPhotoView;
 
@@ -113,8 +111,6 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
         mPhotoView =  mRootView.findViewById(R.id.photo);
         mPhotoBackgroundView =  mRootView.findViewById(R.id.photo_background);
         titleToolbar = mRootView.findViewById(R.id.article_toolbar_title);
-
-        mStatusBarColorDrawable = new ColorDrawable(0);
 
         textListAdapter = new TextListAdapter(inflater);
 
@@ -193,28 +189,20 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
                                         : Html.fromHtml(subtitle));
 
             loadTextBody(article.getBody());
-            
-            ImageLoaderHelper.getInstance(getActivity()).getImageLoader()
-                    .get(article.getPhotoUrl(), new ImageLoader.ImageListener() {
-                        @Override
-                        public void onResponse(ImageLoader.ImageContainer imageContainer, boolean b) {
-                            Bitmap bitmap = imageContainer.getBitmap();
-                            if (bitmap != null) {
-                                Palette p = Palette.generate(bitmap, 12);
-                                mMutedColor = p.getDarkMutedColor(0xFF333333);
-                                mPhotoView.setImageBitmap(imageContainer.getBitmap());
-                                mPhotoBackgroundView.setImageBitmap(imageContainer.getBitmap());
 
-                                mRootView.findViewById(R.id.meta_bar)
-                                        .setBackgroundColor(mMutedColor);
-                            }
-                        }
+            Glide.with(getContext())
+                .setDefaultRequestOptions(new RequestOptions()
+                        .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+                        .centerCrop())
+                .load(article.getPhotoUrl())
+                .into(mPhotoBackgroundView);
 
-                        @Override
-                        public void onErrorResponse(VolleyError volleyError) {
-
-                        }
-                    });
+            Glide.with(getContext())
+                    .setDefaultRequestOptions(new RequestOptions()
+                            .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+                            .centerInside())
+                    .load(article.getPhotoUrl())
+                    .into(mPhotoView);
         }
     }
 
