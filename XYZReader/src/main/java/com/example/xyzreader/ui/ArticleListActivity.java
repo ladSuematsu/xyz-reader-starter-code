@@ -16,9 +16,13 @@ import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.volley.toolbox.ImageLoader;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.ItemsContract;
@@ -175,9 +179,12 @@ public class ArticleListActivity extends AppCompatActivity implements
             holder.subtitleView.setText(parsedLabel);
 
             String thumbnailUrl = mCursor.getString(ArticleLoader.Query.THUMB_URL);
-            holder.thumbnailView.setImageUrl(
-                    thumbnailUrl,
-                    loader);
+            Glide.with(ArticleListActivity.this)
+                    .setDefaultRequestOptions(new RequestOptions()
+                            .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+                            .centerCrop())
+                    .load(thumbnailUrl)
+                    .into(holder.thumbnailView);
         }
 
         @Override
@@ -209,7 +216,7 @@ public class ArticleListActivity extends AppCompatActivity implements
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {
-            DynamicHeightNetworkImageView thumbnailView;
+            ImageView thumbnailView;
             TextView titleView;
             TextView subtitleView;
 
