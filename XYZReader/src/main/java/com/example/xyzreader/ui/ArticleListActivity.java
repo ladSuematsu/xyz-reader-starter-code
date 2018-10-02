@@ -146,7 +146,6 @@ public class ArticleListActivity extends AppCompatActivity implements
     }
 
     private class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
-        private final ImageLoader loader;
         private final Cursor mCursor;
 
         private final String labelFormat = getString(R.string.article_date_author_format);
@@ -158,7 +157,6 @@ public class ArticleListActivity extends AppCompatActivity implements
         private final GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2,1,1);
 
         public Adapter(Cursor cursor) {
-            loader = ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader();
             mCursor = cursor;
         }
 
