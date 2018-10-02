@@ -20,7 +20,8 @@
         android:layout_height="?actionBarSize" />
 
     <android.support.design.widget.FloatingActionButton android:id="@+id/share_fab"
-        android:stateListAnimator="@anim/fab_state_list_anim"
+        app:elevation="@dimen/fab_elevation_resting"
+        app:pressedTranslationZ="@dimen/fab_elevation_pressed"
         android:background="@drawable/add_fab_background"
         android:layout_gravity="bottom|end"
         android:layout_marginRight="@dimen/fab_margin"
