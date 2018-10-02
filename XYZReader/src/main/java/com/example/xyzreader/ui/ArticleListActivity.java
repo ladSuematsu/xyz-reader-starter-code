@@ -12,6 +12,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.support.v7.widget.Toolbar;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.View;
@@ -68,6 +69,9 @@ public class ArticleListActivity extends AppCompatActivity implements
     }
 
     private void setupViews() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
         mRecyclerView = findViewById(R.id.recycler_view);
 
         mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
