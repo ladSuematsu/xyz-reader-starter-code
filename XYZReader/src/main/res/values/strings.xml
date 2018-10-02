@@ -7,6 +7,7 @@
     <string name="up">Up</string>
 
     <string name="article_date_author_format">%s\nby %s</string>
+    <string name="article_author_format">by %s</string>
 
     <!-- HTML encoded: %s by <font color='#ffffff'>%s</font> -->
     <string name="article_date_author_format_html">%s by &lt;font color=\'#ffffff\'&gt;%s&lt;/font&gt;</string>

@@ -2,20 +2,16 @@ package com.example.xyzreader.ui;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.SubtitleCollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
-import android.support.v7.graphics.Palette;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
@@ -26,8 +22,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageLoader;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
@@ -46,9 +40,8 @@ import java.util.GregorianCalendar;
  * tablets) or a {@link ArticleDetailActivity} on handsets.
  */
 public class ArticleDetailFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
-    private FragmentManager fragmentManager;
     private boolean viewCreated;
-    private Toolbar titleToolbar;
+    private SubtitleCollapsingToolbarLayout titleToolbar;
     private String labelFormat;
 
     private static final String TAG = "ArticleDetailFragment";
@@ -101,7 +94,6 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
             mItemId = getArguments().getLong(ARG_ITEM_ID);
         }
 
-        fragmentManager = getFragmentManager();
     }
 
     @Override
@@ -110,7 +102,8 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
         mRootView = inflater.inflate(R.layout.fragment_article_detail, container, false);
         mPhotoView =  mRootView.findViewById(R.id.photo);
         mPhotoBackgroundView =  mRootView.findViewById(R.id.photo_background);
-        titleToolbar = mRootView.findViewById(R.id.article_toolbar_title);
+//        titleToolbar = mRootView.findViewById(R.id.article_toolbar_title);
+        titleToolbar = mRootView.findViewById(R.id.collapsing_toolbar);
 
         textListAdapter = new TextListAdapter(inflater);
 
@@ -165,6 +158,7 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
             titleView.setText("N/A");
             bylineView.setText("N/A" );
             titleToolbar.setTitle("N/A");
+            titleToolbar.setSubtitle("N/A");
 
             textListAdapter.setDatasource("");
         } else {
@@ -172,10 +166,16 @@ public class ArticleDetailFragment extends Fragment implements LoaderManager.Loa
             mRootView.setVisibility(View.VISIBLE);
             mRootView.animate().alpha(1);
             titleToolbar.setTitle(article.getTitle());
+
             titleView.setText(article.getTitle());
 
-            Date publishedDate = parsePublishedDate();
             String author = article.getAuthor();
+            titleToolbar.setSubtitle(TextUtils.isEmpty(author)
+                                        ? ""
+                                        : String.format(getString(R.string.article_author_format), author));
+
+
+            Date publishedDate = parsePublishedDate();
             String formattedDate = publishedDate.before(START_OF_EPOCH.getTime())
                                                             ? outputFormat.format(publishedDate)
                                                             : DateUtils.getRelativeTimeSpanString(publishedDate.getTime(),
