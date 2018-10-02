@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -45,6 +46,8 @@ public class ArticleListActivity extends AppCompatActivity implements
 
     private static final String TAG = ArticleListActivity.class.toString();
     private SwipeRefreshLayout mSwipeRefreshLayout;
+    private boolean mRefreshError;
+    private boolean mRefreshNoInternet;
     private RecyclerView mRecyclerView;
 
     private final SwipeRefreshLayout.OnRefreshListener onRefreshListener = new SwipeRefreshLayout.OnRefreshListener() {
@@ -103,6 +106,9 @@ public class ArticleListActivity extends AppCompatActivity implements
         public void onReceive(Context context, Intent intent) {
             if (UpdaterService.BROADCAST_ACTION_STATE_CHANGE.equals(intent.getAction())) {
                 mIsRefreshing = intent.getBooleanExtra(UpdaterService.EXTRA_REFRESHING, false);
+                mRefreshError = intent.getBooleanExtra(UpdaterService.EXTRA_IS_ERROR, false);
+                mRefreshNoInternet = intent.getBooleanExtra(UpdaterService.EXTRA_NO_INTERNET, false);
+
                 updateRefreshingUI();
             }
         }
@@ -110,6 +116,12 @@ public class ArticleListActivity extends AppCompatActivity implements
 
     private void updateRefreshingUI() {
         mSwipeRefreshLayout.setRefreshing(mIsRefreshing);
+
+        if (mRefreshNoInternet) {
+            Snackbar.make(mSwipeRefreshLayout, R.string.list_refresh_no_internet, Snackbar.LENGTH_LONG).show();
+        } else if (mRefreshError) {
+            Snackbar.make(mSwipeRefreshLayout, R.string.list_refresh_error, Snackbar.LENGTH_LONG).show();
+        }
     }
 
     @Override

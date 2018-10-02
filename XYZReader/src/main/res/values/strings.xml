@@ -12,4 +12,7 @@
     <!-- HTML encoded: %s by <font color='#ffffff'>%s</font> -->
     <string name="article_date_author_format_html">%s by &lt;font color=\'#ffffff\'&gt;%s&lt;/font&gt;</string>
 
+    <string name="list_refresh_no_internet">No Internet connection</string>
+    <string name="list_refresh_error">Something went wrong while refreshing articles catalog</string>
+
 </resources>
