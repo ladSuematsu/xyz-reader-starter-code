@@ -24,10 +24,11 @@
 
     <android.support.design.widget.AppBarLayout
         android:id="@+id/toolbar_container"
+        app:elevation="@dimen/appbar_elevation"
         android:layout_width="match_parent"
         android:layout_height="112dp">
 
-        <android.support.design.widget.CollapsingToolbarLayout
+        <android.support.design.widget.SubtitleCollapsingToolbarLayout
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
             app:contentScrim="@color/theme_primary"
             android:layout_width="match_parent"
@@ -49,7 +50,7 @@
                     android:contentDescription="@string/app_name" />
 
             </android.support.v7.widget.Toolbar>
-        </android.support.design.widget.CollapsingToolbarLayout>
+        </android.support.design.widget.SubtitleCollapsingToolbarLayout>
     </android.support.design.widget.AppBarLayout>
 
 </android.support.design.widget.CoordinatorLayout>

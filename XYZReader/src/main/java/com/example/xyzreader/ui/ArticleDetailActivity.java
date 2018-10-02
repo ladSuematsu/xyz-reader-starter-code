@@ -47,6 +47,8 @@ public class ArticleDetailActivity extends AppCompatActivity
         mPager = findViewById(R.id.pager);
         mPager.setAdapter(mPagerAdapter);
         Toolbar toolbar = findViewById(R.id.up_container);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override

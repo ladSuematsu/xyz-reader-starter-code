@@ -4,23 +4,27 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <android.support.v4.view.ViewPager
-        android:id="@+id/pager"
+    <android.support.v4.view.ViewPager android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <android.support.v7.widget.Toolbar
-        app:navigationContentDescription="@string/up"
-        app:navigationIcon="@drawable/ic_arrow_back"
+    <android.support.design.widget.AppBarLayout
         android:background="@android:color/transparent"
         app:elevation="0dp"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-        android:id="@+id/up_container"
         android:layout_width="match_parent"
-        android:layout_height="?actionBarSize" />
+        android:layout_height="wrap_content">
+        <android.support.v7.widget.Toolbar
+            app:navigationContentDescription="@string/up"
+            app:navigationIcon="@drawable/ic_arrow_back"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+            android:id="@+id/up_container"
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize" />
+    </android.support.design.widget.AppBarLayout>
 
     <android.support.design.widget.FloatingActionButton android:id="@+id/share_fab"
-        android:stateListAnimator="@anim/fab_state_list_anim"
+        app:elevation="@dimen/fab_elevation_resting"
+        app:pressedTranslationZ="@dimen/fab_elevation_pressed"
         android:background="@drawable/add_fab_background"
         android:layout_gravity="bottom|end"
         android:layout_marginRight="@dimen/fab_margin"

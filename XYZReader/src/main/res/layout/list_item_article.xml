@@ -14,11 +14,12 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <ImageView
+        <com.example.xyzreader.ui.DynamicHeightImageView
             android:id="@+id/thumbnail"
-            android:layout_width="match_parent"
             android:background="@color/photo_placeholder"
-            android:layout_height="192dp" />
+            android:scaleType="centerCrop"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" />
 
         <TextView
             android:id="@+id/article_title"

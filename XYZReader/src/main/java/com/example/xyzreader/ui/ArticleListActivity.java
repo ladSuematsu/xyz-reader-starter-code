@@ -6,12 +6,14 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.support.v7.widget.Toolbar;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.View;
@@ -44,6 +46,8 @@ public class ArticleListActivity extends AppCompatActivity implements
 
     private static final String TAG = ArticleListActivity.class.toString();
     private SwipeRefreshLayout mSwipeRefreshLayout;
+    private boolean mRefreshError;
+    private boolean mRefreshNoInternet;
     private RecyclerView mRecyclerView;
 
     private final SwipeRefreshLayout.OnRefreshListener onRefreshListener = new SwipeRefreshLayout.OnRefreshListener() {
@@ -68,6 +72,9 @@ public class ArticleListActivity extends AppCompatActivity implements
     }
 
     private void setupViews() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
         mRecyclerView = findViewById(R.id.recycler_view);
 
         mSwipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
@@ -99,6 +106,9 @@ public class ArticleListActivity extends AppCompatActivity implements
         public void onReceive(Context context, Intent intent) {
             if (UpdaterService.BROADCAST_ACTION_STATE_CHANGE.equals(intent.getAction())) {
                 mIsRefreshing = intent.getBooleanExtra(UpdaterService.EXTRA_REFRESHING, false);
+                mRefreshError = intent.getBooleanExtra(UpdaterService.EXTRA_IS_ERROR, false);
+                mRefreshNoInternet = intent.getBooleanExtra(UpdaterService.EXTRA_NO_INTERNET, false);
+
                 updateRefreshingUI();
             }
         }
@@ -106,6 +116,12 @@ public class ArticleListActivity extends AppCompatActivity implements
 
     private void updateRefreshingUI() {
         mSwipeRefreshLayout.setRefreshing(mIsRefreshing);
+
+        if (mRefreshNoInternet) {
+            Snackbar.make(mSwipeRefreshLayout, R.string.list_refresh_no_internet, Snackbar.LENGTH_LONG).show();
+        } else if (mRefreshError) {
+            Snackbar.make(mSwipeRefreshLayout, R.string.list_refresh_error, Snackbar.LENGTH_LONG).show();
+        }
     }
 
     @Override
@@ -130,7 +146,6 @@ public class ArticleListActivity extends AppCompatActivity implements
     }
 
     private class Adapter extends RecyclerView.Adapter<Adapter.ViewHolder> {
-        private final ImageLoader loader;
         private final Cursor mCursor;
 
         private final String labelFormat = getString(R.string.article_date_author_format);
@@ -142,7 +157,6 @@ public class ArticleListActivity extends AppCompatActivity implements
         private final GregorianCalendar START_OF_EPOCH = new GregorianCalendar(2,1,1);
 
         public Adapter(Cursor cursor) {
-            loader = ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader();
             mCursor = cursor;
         }
 
